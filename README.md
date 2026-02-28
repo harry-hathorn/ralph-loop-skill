@@ -1,51 +1,158 @@
 # Ralph Loop
 
-AI writes code while you sleep.
+Autonomous AI coding via a bash loop with fresh context each iteration. Based on [The Ralph Playbook](https://ghuntley.com/ralph/).
 
 ## How It Works
 
 ```
-┌─────────────────────────────────────────┐
-│  1. You write a plan (spec.md)          │
-│  2. Script starts Claude                 │
-│  3. Claude does ONE task                 │
-│  4. Claude writes marker file            │
-│  5. Script kills Claude                  │
-│  6. Repeat with fresh Claude             │
-└─────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         3 Phases, 2 Prompts, 1 Loop                         │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+     ┌──────────────────────┐
+     │   PHASE 1: DEFINE    │
+     │    REQUIREMENTS      │
+     │   (you + LLM chat)   │
+     └──────────┬───────────┘
+                │
+                ▼
+         ┌─────────────┐
+         │   specs/    │  ◄── one file per topic of concern
+         │   *.md      │
+         └─────────────┘
+                │
+                ▼
+     ┌──────────────────────┐      ┌─────────────────┐
+     │   PHASE 2: PLAN      │      │  PROMPT_plan.md │
+     │   `./loop.sh plan`   │◄────►│                 │
+     │                      │      │  AGENTS.md      │
+     │   Gap analysis only  │      └─────────────────┘
+     └──────────┬───────────┘
+                │
+                ▼
+       ┌────────────────────┐
+       │ IMPLEMENTATION_    │  ◄── Ralph generates this
+       │ PLAN.md            │
+       └────────┬───────────┘
+                │
+                ▼
+     ┌──────────────────────┐      ┌─────────────────┐
+     │   PHASE 3: BUILD     │      │ PROMPT_build.md │
+     │   `./loop.sh`        │◄────►│                 │
+     │                      │      │  AGENTS.md      │
+     │  One task per loop   │      └─────────────────┘
+     └──────────┬───────────┘
+                │
+      ┌─────────┴─────────┐
+      │                   │
+      ▼                   ▼
+  ┌───────┐         ┌─────────┐
+  │ src/  │         │  git    │
+  │ code  │         │ commit  │
+  └───────┘         └─────────┘
 ```
 
-## Why It Works
+Each loop iteration gets fresh context. No confusion buildup. The plan file on disk is the shared state between iterations.
 
-**Fresh start each time** — Claude forgets everything between tasks. No confusion buildup.
+### Diagram (Mermaid)
 
-**Plan is king** — The spec file is the truth. Not the chat history.
+```mermaid
+flowchart TB
+    subgraph P1["Phase 1: Define Requirements"]
+        chat["You + LLM Chat"]
+        specs["specs/*.md<br/>one per topic"]
+        chat --> specs
+    end
 
-**One thing at a time** — Small tasks. Clear goals. Better code.
+    subgraph P2["Phase 2: Planning Mode"]
+        plan_cmd["./loop.sh plan"]
+        prompt_plan["PROMPT_plan.md"]
+        agents1["AGENTS.md"]
+        impl_plan["IMPLEMENTATION_PLAN.md"]
+
+        prompt_plan -.->|loaded each iteration| plan_cmd
+        agents1 -.->|loaded each iteration| plan_cmd
+        specs -->|gap analysis| plan_cmd
+        plan_cmd --> impl_plan
+    end
+
+    subgraph P3["Phase 3: Building Mode"]
+        build_cmd["./loop.sh"]
+        prompt_build["PROMPT_build.md"]
+        agents2["AGENTS.md"]
+        src["src/"]
+        commit["git commit"]
+
+        prompt_build -.->|loaded each iteration| build_cmd
+        agents2 -.->|loaded each iteration| build_cmd
+        impl_plan -->|one task per loop| build_cmd
+        build_cmd --> src
+        build_cmd --> commit
+    end
+
+    P1 --> P2 --> P3
+```
 
 ## Quick Start
 
 ```bash
-./scripts/init_ralph.sh /your/project
-# Edit specs/spec.md and specs/implementation_plan.md
-# Run ./run.sh
+# Initialize in your project
+scripts/init_ralph.sh /path/to/project
+cd /path/to/project
 ```
 
-## The Secret Sauce
+Then use the `ralph-loop` skill in Claude Code to have a conversation that produces your specs, configures AGENTS.md, and sets the project goal in PROMPT_plan.md. Review the output, then:
 
-A marker file (`.ralph-loop-complete`) tells the script when Claude is done. Script kills Claude. Fresh Claude starts. Repeat forever.
+```bash
+# Generate the plan
+./loop.sh plan
 
-## Files
+# Build from the plan
+./loop.sh
+```
 
-| File | Purpose |
-|------|---------|
-| `spec.md` | What to build |
-| `implementation_plan.md` | Checklist of tasks |
-| `prompt.md` | Instructions for Claude |
-| `run.sh` | The loop script |
+The skill handles Phase 1 — the conversation that produces specs and configuration. You run Phase 2 and 3 yourself via `loop.sh`.
 
-## Rules
+## File Structure
 
-1. Write specs together (you + AI), not alone
-2. One task per loop
-3. Watch closely at first, then walk away
+```
+project-root/
+├── loop.sh              # The loop (plan/build modes)
+├── PROMPT_plan.md       # Planning prompt
+├── PROMPT_build.md      # Building prompt
+├── AGENTS.md            # Operational guide (build/test commands)
+├── IMPLEMENTATION_PLAN.md  # Generated by Ralph
+├── specs/               # One spec per topic of concern
+└── src/                 # Your code
+```
+
+## Loop Modes
+
+| Command | Mode | Purpose |
+|---|---|---|
+| `./loop.sh plan` | Planning | Gap analysis, generates plan |
+| `./loop.sh plan 5` | Planning | Max 5 iterations |
+| `./loop.sh` | Building | Implements from plan |
+| `./loop.sh 20` | Building | Max 20 iterations |
+
+## Who Does What
+
+| Step | What happens | Who does it |
+|------|--------------|-------------|
+| `init_ralph.sh` | Copies template files with placeholders | Script |
+| Phase 1 (Define) | Bidirectional conversation to produce specs, configure AGENTS.md, set project goal | You + AI (via skill) |
+| Review | Read specs, AGENTS.md, PROMPT_plan.md — refine if needed | You |
+| Phase 2 (Plan) | Generates `IMPLEMENTATION_PLAN.md` from specs | `./loop.sh plan` |
+| Phase 3 (Build) | Implements one task per iteration, commits | `./loop.sh` |
+
+## Key Ideas
+
+- **Two prompts, one loop**: Swap between planning and building by passing `plan` argument
+- **AGENTS.md**: Operational guide with build/test commands. Loaded every iteration. Keep it brief.
+- **Plan is disposable**: Wrong plan? Delete it, run `./loop.sh plan` again
+- **Subagents as memory**: Fan out reads/searches to subagents, keep main context clean
+- **Backpressure**: Tests/builds reject bad work. AGENTS.md wires in project-specific commands.
+
+## Credits
+
+Based on [Geoffrey Huntley's Ralph](https://ghuntley.com/ralph/). Organized via [Clayton Farr's Ralph Playbook](https://github.com/ClaytonFarr/ralph-playbook).
