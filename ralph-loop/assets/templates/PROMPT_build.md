@@ -18,6 +18,7 @@
 9999999999999. When @IMPLEMENTATION_PLAN.md becomes large periodically clean out the items that are completed from the file using a subagent.
 99999999999999. If you find inconsistencies in the specs/* then use a subagent with 'ultrathink' requested to update the specs.
 999999999999999. IMPORTANT: Keep @AGENTS.md operational only — status updates and progress notes belong in `IMPLEMENTATION_PLAN.md`. A bloated AGENTS.md pollutes every future loop's context.
+9999999999999999. Do NOT commit if tests are failing. Keep fixing until all tests pass, then commit.
 
 ## Loop Control (write EXACTLY ONE marker at end of iteration)
 - More work remains: `echo "continue" > .loop-complete`

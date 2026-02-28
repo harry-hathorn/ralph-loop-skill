@@ -64,39 +64,19 @@ while true; do
     ITERATION=$((ITERATION + 1))
     echo -e "\n======================== LOOP $ITERATION ========================\n"
 
-    # Run Claude in interactive mode (background) with the prompt
-    cat "$PROMPT_FILE" | claude --dangerously-skip-permissions &
-    CLAUDE_PID=$!
+    # Run Claude in pipe mode (synchronous — exits when done)
+    cat "$PROMPT_FILE" | claude -p --dangerously-skip-permissions
 
-    # Wait for the marker file to appear (signals task completion)
-    echo "⏳ Waiting for task completion (watching for $MARKER_FILE)..."
-    while [ ! -f "$MARKER_FILE" ]; do
-        # Check if Claude process is still running
-        if ! kill -0 "$CLAUDE_PID" 2>/dev/null; then
-            echo "⚠️  Claude process exited unexpectedly"
+    # Check marker file to decide whether to continue or exit
+    if [ -f "$MARKER_FILE" ]; then
+        MARKER_CONTENT=$(cat "$MARKER_FILE")
+        rm -f "$MARKER_FILE"
+
+        if [ "$MARKER_CONTENT" = "exit" ]; then
+            echo ""
+            echo "All work complete."
             break
         fi
-        sleep 1
-    done
-
-    # Claude should have written the marker - give it a moment to finish
-    sleep 1
-
-    # Terminate Claude gracefully if still running
-    if kill -0 "$CLAUDE_PID" 2>/dev/null; then
-        echo "📋 Task complete, terminating Claude session..."
-        kill "$CLAUDE_PID" 2>/dev/null || true
-        wait "$CLAUDE_PID" 2>/dev/null || true
-    fi
-
-    # Check marker content to decide whether to continue or exit
-    MARKER_CONTENT=$(cat "$MARKER_FILE" 2>/dev/null || echo "continue")
-    rm -f "$MARKER_FILE"
-
-    if [ "$MARKER_CONTENT" = "exit" ]; then
-        echo ""
-        echo "✅ Loop exit requested - all work complete"
-        break
     fi
 
     if [ "$PUSH" = true ]; then
@@ -106,9 +86,5 @@ while true; do
         }
     fi
 
-    echo ""
-    echo "─────────────────────────────────────────────────────────────"
-    echo "Loop iteration complete. Brief pause before next iteration..."
-    echo "─────────────────────────────────────────────────────────────"
-    sleep 2
+    echo -e "\n"
 done
