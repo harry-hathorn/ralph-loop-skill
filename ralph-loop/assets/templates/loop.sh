@@ -36,6 +36,7 @@ fi
 
 ITERATION=0
 CURRENT_BRANCH=$(git branch --show-current)
+MARKER_FILE=".loop-complete"
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Mode:   $MODE"
@@ -51,13 +52,52 @@ if [ ! -f "$PROMPT_FILE" ]; then
     exit 1
 fi
 
+# Clean up any stale marker
+rm -f "$MARKER_FILE"
+
 while true; do
     if [ $MAX_ITERATIONS -gt 0 ] && [ $ITERATION -ge $MAX_ITERATIONS ]; then
         echo "Reached max iterations: $MAX_ITERATIONS"
         break
     fi
 
-    cat "$PROMPT_FILE" | claude -p --dangerously-skip-permissions
+    ITERATION=$((ITERATION + 1))
+    echo -e "\n======================== LOOP $ITERATION ========================\n"
+
+    # Run Claude in interactive mode (background) with the prompt
+    cat "$PROMPT_FILE" | claude --dangerously-skip-permissions &
+    CLAUDE_PID=$!
+
+    # Wait for the marker file to appear (signals task completion)
+    echo "⏳ Waiting for task completion (watching for $MARKER_FILE)..."
+    while [ ! -f "$MARKER_FILE" ]; do
+        # Check if Claude process is still running
+        if ! kill -0 "$CLAUDE_PID" 2>/dev/null; then
+            echo "⚠️  Claude process exited unexpectedly"
+            break
+        fi
+        sleep 1
+    done
+
+    # Claude should have written the marker - give it a moment to finish
+    sleep 1
+
+    # Terminate Claude gracefully if still running
+    if kill -0 "$CLAUDE_PID" 2>/dev/null; then
+        echo "📋 Task complete, terminating Claude session..."
+        kill "$CLAUDE_PID" 2>/dev/null || true
+        wait "$CLAUDE_PID" 2>/dev/null || true
+    fi
+
+    # Check marker content to decide whether to continue or exit
+    MARKER_CONTENT=$(cat "$MARKER_FILE" 2>/dev/null || echo "continue")
+    rm -f "$MARKER_FILE"
+
+    if [ "$MARKER_CONTENT" = "exit" ]; then
+        echo ""
+        echo "✅ Loop exit requested - all work complete"
+        break
+    fi
 
     if [ "$PUSH" = true ]; then
         git push origin "$CURRENT_BRANCH" || {
@@ -66,6 +106,9 @@ while true; do
         }
     fi
 
-    ITERATION=$((ITERATION + 1))
-    echo -e "\n\n======================== LOOP $ITERATION ========================\n"
+    echo ""
+    echo "─────────────────────────────────────────────────────────────"
+    echo "Loop iteration complete. Brief pause before next iteration..."
+    echo "─────────────────────────────────────────────────────────────"
+    sleep 2
 done
