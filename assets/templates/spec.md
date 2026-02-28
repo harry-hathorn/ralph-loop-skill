@@ -1,12 +1,3 @@
-# Feature: [Feature Name]
+# [Topic of Concern]
 
-## Problem
-[Describe the problem this feature solves]
-
-## Requirements
-- [Requirement 1]
-- [Requirement 2]
-- [Requirement 3]
-
-## Constraints
-- [Any constraints or limitations]
+One spec per topic of concern. Format is up to you — the LLM will work with whatever structure you provide. Focus on requirements and acceptance criteria.
