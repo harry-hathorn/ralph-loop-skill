@@ -99,17 +99,19 @@ flowchart TB
 # Initialize in your project
 scripts/init_ralph.sh /path/to/project
 cd /path/to/project
+```
 
-# 1. Edit PROMPT_plan.md — replace [project-specific goal]
-# 2. Edit AGENTS.md — add your build/test/lint commands
-# 3. Write specs in specs/ (one per topic of concern)
+Then use the `ralph-loop` skill in Claude Code to have a conversation that produces your specs, configures AGENTS.md, and sets the project goal in PROMPT_plan.md. Review the output, then:
 
+```bash
 # Generate the plan
 ./loop.sh plan
 
 # Build from the plan
 ./loop.sh
 ```
+
+The skill handles Phase 1 — the conversation that produces specs and configuration. You run Phase 2 and 3 yourself via `loop.sh`.
 
 ## File Structure
 
@@ -137,11 +139,11 @@ project-root/
 
 | Step | What happens | Who does it |
 |------|--------------|-------------|
-| `init_ralph.sh` | Creates files + AGENTS.md template with placeholders | Script |
-| After init | Fill in `[test command]`, `[typecheck command]`, etc. in AGENTS.md | You manually |
-| Phase 1 (Define) | Generates `specs/*.md` through conversation | AI + You |
-| Phase 2 (Plan) | Generates `IMPLEMENTATION_PLAN.md` | AI |
-| Phase 3 (Build) | Updates AGENTS.md with operational learnings | AI |
+| `init_ralph.sh` | Copies template files with placeholders | Script |
+| Phase 1 (Define) | Bidirectional conversation to produce specs, configure AGENTS.md, set project goal | You + AI (via skill) |
+| Review | Read specs, AGENTS.md, PROMPT_plan.md — refine if needed | You |
+| Phase 2 (Plan) | Generates `IMPLEMENTATION_PLAN.md` from specs | `./loop.sh plan` |
+| Phase 3 (Build) | Implements one task per iteration, commits | `./loop.sh` |
 
 ## Key Ideas
 
