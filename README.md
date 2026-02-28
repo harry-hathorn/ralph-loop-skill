@@ -133,6 +133,16 @@ project-root/
 | `./loop.sh` | Building | Implements from plan |
 | `./loop.sh 20` | Building | Max 20 iterations |
 
+## Who Does What
+
+| Step | What happens | Who does it |
+|------|--------------|-------------|
+| `init_ralph.sh` | Creates files + AGENTS.md template with placeholders | Script |
+| After init | Fill in `[test command]`, `[typecheck command]`, etc. in AGENTS.md | You manually |
+| Phase 1 (Define) | Generates `specs/*.md` through conversation | AI + You |
+| Phase 2 (Plan) | Generates `IMPLEMENTATION_PLAN.md` | AI |
+| Phase 3 (Build) | Updates AGENTS.md with operational learnings | AI |
+
 ## Key Ideas
 
 - **Two prompts, one loop**: Swap between planning and building by passing `plan` argument
