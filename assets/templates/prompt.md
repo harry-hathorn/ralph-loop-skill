@@ -1,32 +1,20 @@
 # Ralph Loop Instructions
 
 ## Study Phase
-1. Study `specs/spec.md` thoroughly
-2. Study `specs/implementation_plan.md` thoroughly
+1. Read `specs/spec.md`
+2. Read `specs/implementation_plan.md`
 
 ## Repository Context
-[Add repository-specific information here:
-- Project structure
-- Coding conventions
-- Tech stack
-- Important patterns or practices]
+[Add: project structure, framework, testing setup, conventions]
 
-## Task Execution
-3. Pick the highest leverage unchecked task from the implementation plan
-4. Complete the task (writing actual code, not just planning)
-5. Write tests or verify the implementation works
-6. Update the implementation plan to mark the task complete
+## Execution
+3. Pick highest-leverage unchecked task
+4. Complete the task (write actual code)
+5. Verify it works
+6. Mark task complete in implementation_plan.md
 
-## Critical Rules
-- DO NOT skip ahead - do ONE task per loop iteration
-- If you encounter ambiguity, make a pragmatic decision and note it
-- Always update the implementation plan after completing a task
-- If a task reveals new work, add it to the implementation plan first
-- Focus on working code over perfect architecture
+## After Completion (CRITICAL)
+1. Write marker: `echo "done" > .ralph-loop-complete`
+2. Exit immediately
 
-## After Task Completion
-**CRITICAL: After updating the implementation plan, create the done marker and exit.**
-1. Write the done marker file: `echo "done" > .ralph-loop-complete`
-2. Exit the session - the Ralph Loop script will detect the marker and continue
-
-Do not wait for user input. Do not ask for confirmation. This is essential for Ralph Loops to work correctly - each iteration must start with a clean context window, avoiding context rot.
+Rules: ONE task per loop. No skipping ahead. If blocked, note it and pick next task.
