@@ -5,12 +5,93 @@ Autonomous AI coding via a bash loop with fresh context each iteration. Based on
 ## How It Works
 
 ```
-Phase 1: Define Requirements     (you + LLM write specs)
-Phase 2: Planning Mode           (Ralph generates IMPLEMENTATION_PLAN.md)
-Phase 3: Building Mode           (Ralph implements from plan, one task per loop)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         3 Phases, 2 Prompts, 1 Loop                         │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+     ┌──────────────────────┐
+     │   PHASE 1: DEFINE    │
+     │    REQUIREMENTS      │
+     │   (you + LLM chat)   │
+     └──────────┬───────────┘
+                │
+                ▼
+         ┌─────────────┐
+         │   specs/    │  ◄── one file per topic of concern
+         │   *.md      │
+         └─────────────┘
+                │
+                ▼
+     ┌──────────────────────┐      ┌─────────────────┐
+     │   PHASE 2: PLAN      │      │  PROMPT_plan.md │
+     │   `./loop.sh plan`   │◄────►│                 │
+     │                      │      │  AGENTS.md      │
+     │   Gap analysis only  │      └─────────────────┘
+     └──────────┬───────────┘
+                │
+                ▼
+       ┌────────────────────┐
+       │ IMPLEMENTATION_    │  ◄── Ralph generates this
+       │ PLAN.md            │
+       └────────┬───────────┘
+                │
+                ▼
+     ┌──────────────────────┐      ┌─────────────────┐
+     │   PHASE 3: BUILD     │      │ PROMPT_build.md │
+     │   `./loop.sh`        │◄────►│                 │
+     │                      │      │  AGENTS.md      │
+     │  One task per loop   │      └─────────────────┘
+     └──────────┬───────────┘
+                │
+      ┌─────────┴─────────┐
+      │                   │
+      ▼                   ▼
+  ┌───────┐         ┌─────────┐
+  │ src/  │         │  git    │
+  │ code  │         │ commit  │
+  └───────┘         └─────────┘
 ```
 
 Each loop iteration gets fresh context. No confusion buildup. The plan file on disk is the shared state between iterations.
+
+### Diagram (Mermaid)
+
+```mermaid
+flowchart TB
+    subgraph P1["Phase 1: Define Requirements"]
+        chat["You + LLM Chat"]
+        specs["specs/*.md<br/>one per topic"]
+        chat --> specs
+    end
+
+    subgraph P2["Phase 2: Planning Mode"]
+        plan_cmd["./loop.sh plan"]
+        prompt_plan["PROMPT_plan.md"]
+        agents1["AGENTS.md"]
+        impl_plan["IMPLEMENTATION_PLAN.md"]
+
+        prompt_plan -.->|loaded each iteration| plan_cmd
+        agents1 -.->|loaded each iteration| plan_cmd
+        specs -->|gap analysis| plan_cmd
+        plan_cmd --> impl_plan
+    end
+
+    subgraph P3["Phase 3: Building Mode"]
+        build_cmd["./loop.sh"]
+        prompt_build["PROMPT_build.md"]
+        agents2["AGENTS.md"]
+        src["src/"]
+        commit["git commit"]
+
+        prompt_build -.->|loaded each iteration| build_cmd
+        agents2 -.->|loaded each iteration| build_cmd
+        impl_plan -->|one task per loop| build_cmd
+        build_cmd --> src
+        build_cmd --> commit
+    end
+
+    P1 --> P2 --> P3
+```
 
 ## Quick Start
 
