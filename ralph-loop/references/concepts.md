@@ -3,9 +3,9 @@
 ## Subagent Strategy
 
 Main context = scheduler. Don't pollute it with expensive work.
-- Fan out to Sonnet subagents for reads/searches (up to 500)
+- Fan out to parallel subagents for reads/searches (up to 500)
 - Only 1 subagent for build/tests (backpressure control)
-- Opus subagents for complex reasoning (debugging, architecture)
+- Subagents for complex reasoning (debugging, architecture)
 
 ## Backpressure
 

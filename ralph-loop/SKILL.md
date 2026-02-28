@@ -5,7 +5,7 @@ description: "Autonomous AI coding workflow using fresh context per iteration. U
 
 # Ralph Loop
 
-Autonomous coding via a bash loop that restarts Claude with fresh context each iteration. Each iteration reads the plan, picks one task, implements it, commits, and exits. The loop restarts. Eventual consistency through iteration.
+Autonomous coding via a bash loop that restarts the LLM with fresh context each iteration. Each iteration reads the plan, picks one task, implements it, commits, and exits. The loop restarts. Eventual consistency through iteration.
 
 ## Setup
 
