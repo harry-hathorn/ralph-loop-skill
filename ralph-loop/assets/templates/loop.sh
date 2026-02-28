@@ -1,20 +1,33 @@
 #!/bin/bash
-# Usage: ./loop.sh [plan] [max_iterations]
+# Usage: ./loop.sh [plan] [max_iterations] [--push]
 # Examples:
 #   ./loop.sh              # Build mode, unlimited iterations
 #   ./loop.sh 20           # Build mode, max 20 iterations
 #   ./loop.sh plan         # Plan mode, unlimited iterations
 #   ./loop.sh plan 5       # Plan mode, max 5 iterations
+#   ./loop.sh --push       # Build mode, push after each iteration
+#   ./loop.sh plan --push  # Plan mode, push after each iteration
+
+PUSH=false
 
 # Parse arguments
-if [ "$1" = "plan" ]; then
+ARGS=()
+for arg in "$@"; do
+    if [ "$arg" = "--push" ]; then
+        PUSH=true
+    else
+        ARGS+=("$arg")
+    fi
+done
+
+if [ "${ARGS[0]}" = "plan" ]; then
     MODE="plan"
     PROMPT_FILE="PROMPT_plan.md"
-    MAX_ITERATIONS=${2:-0}
-elif [[ "$1" =~ ^[0-9]+$ ]]; then
+    MAX_ITERATIONS=${ARGS[1]:-0}
+elif [[ "${ARGS[0]}" =~ ^[0-9]+$ ]]; then
     MODE="build"
     PROMPT_FILE="PROMPT_build.md"
-    MAX_ITERATIONS=$1
+    MAX_ITERATIONS=${ARGS[0]}
 else
     MODE="build"
     PROMPT_FILE="PROMPT_build.md"
@@ -28,6 +41,7 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "Mode:   $MODE"
 echo "Prompt: $PROMPT_FILE"
 echo "Branch: $CURRENT_BRANCH"
+echo "Push:   $PUSH"
 [ $MAX_ITERATIONS -gt 0 ] && echo "Max:    $MAX_ITERATIONS iterations"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
@@ -45,11 +59,12 @@ while true; do
 
     cat "$PROMPT_FILE" | claude -p --dangerously-skip-permissions
 
-    # Push changes after each iteration
-    git push origin "$CURRENT_BRANCH" || {
-        echo "Failed to push. Creating remote branch..."
-        git push -u origin "$CURRENT_BRANCH"
-    }
+    if [ "$PUSH" = true ]; then
+        git push origin "$CURRENT_BRANCH" || {
+            echo "Failed to push. Creating remote branch..."
+            git push -u origin "$CURRENT_BRANCH"
+        }
+    fi
 
     ITERATION=$((ITERATION + 1))
     echo -e "\n\n======================== LOOP $ITERATION ========================\n"

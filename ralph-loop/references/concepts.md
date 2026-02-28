@@ -35,10 +35,12 @@ These phrasings are deliberate and should be preserved:
 | `./loop.sh plan 5` | Planning | Max 5 iterations |
 | `./loop.sh` | Building | Uses PROMPT_build.md, implements from plan |
 | `./loop.sh 20` | Building | Max 20 iterations |
+| `./loop.sh --push` | Building | Push to remote after each iteration |
+| `./loop.sh plan --push` | Planning | Push to remote after each iteration |
 
 Each iteration: `cat PROMPT.md | claude -p --dangerously-skip-permissions`
 
-No marker file — Claude exits naturally, bash loop restarts. Git push after each iteration.
+No marker file — the LLM exits naturally, bash loop restarts. Push is opt-in (`--push`) to avoid hanging on SSH password prompts.
 
 ## Steering Ralph
 
