@@ -1,0 +1,240 @@
+
+❯ please fix the granularity ohn the plan, you should understand the spec
+
+● Let me read all the specs to understand what we're building, then rewrite the plan with proper granularity.
+
+● Read 6 files (ctrl+o to expand)
+
+● Now I understand the full scope. Let me rewrite the plan with proper atomic tasks.
+
+● Write(IMPLEMENTATION_PLAN.md)
+  ⎿  Added 107 lines, removed 52 lines
+        2
+        3  Browser-based music tracker with SID-style 8-bit synth.
+        4
+        5 -## Project Setup
+        5 +**Tracker layout:** Columns = tracks, Rows = steps. Playhead scrolls vertically downward.
+        6
+        7 -- [ ] Create package.json with Vite, TypeScript, Vitest dependencies
+        8 -- [ ] Create tsconfig.json with strict mode enabled
+        9 -- [ ] Create vite.config.ts with build configuration
+        7 +---
+        8 +
+        9 +## Phase 0: Project Setup
+       10 +
+       11 +- [ ] Create package.json with Vite, TypeScript, Vitest
+       12 +- [ ] Create tsconfig.json with strict mode
+       13 +- [ ] Create vite.config.ts
+       14  - [ ] Create index.html entry point
+       15  - [ ] Create src/main.ts entry file
+       16 -- [ ] Create src/lib directory structure
+       16
+       17 -## Phase 1: Core Types & State (specs/01-core-types.md)
+       17 +---
+       18
+       19 +## Phase 1: Core Types (specs/01-core-types.md)
+       20 +
+       21  - [ ] Create src/lib/types.ts with Note, Track, Instrument, Project interfaces
+       22 -- [ ] Create src/lib/store.ts with immutable state store (getState, setState, subscribe)
+       23 -- [ ] Create tests for store immutability
+       22 +- [ ] Create src/lib/store.ts with createStore(getState, setState, subscribe)
+       23 +- [ ] Create src/lib/state-transforms.ts with setNote pure function
+       24 +- [ ] Add setCurrentStep pure function to src/lib/state-transforms.ts
+       25 +- [ ] Add togglePlayback pure function to src/lib/state-transforms.ts
+       26 +- [ ] Add setInstrument pure function to src/lib/state-transforms.ts
+       27
+       28 +---
+       29 +
+       30  ## Phase 2: Utilities (specs/04-tracker-grid.md, specs/06-keyboard-input.md)
+       31
+       32  - [ ] Create src/lib/midi.ts with midiToNoteName function
+       33 -- [ ] Create tests for midiToNoteName (all 128 notes)
+       34 -- [ ] Create src/lib/keyboard.ts with key-to-MIDI mapping (getNoteFromKey)
+       35 -- [ ] Create tests for getNoteFromKey mapping
+       33 +- [ ] Add noteToFrequency function to src/lib/midi.ts
+       34 +- [ ] Create src/lib/keyboard.ts with getNoteFromKey function
+       35 +- [ ] Add octave offset handling to src/lib/keyboard.ts
+       36
+       37 +---
+       38 +
+       39  ## Phase 3: Playback Engine (specs/03-playback-engine.md)
+       40
+       41 -- [ ] Create src/lib/playback.ts with getStepDurationMs function
+       42 -- [ ] Create tests for getStepDurationMs calculation
+       43 -- [ ] Add PlaybackEngine class to src/lib/playback.ts (start, stop, setBpm, onStep)
+       44 -- [ ] Create tests for PlaybackEngine timing
+       41 +- [ ] Create src/lib/playback/timing.ts with getStepDurationMs function
+       42 +- [ ] Create src/lib/playback/engine.ts with PlaybackEngine class (start/stop)
+       43 +- [ ] Add setBpm method to PlaybackEngine
+       44 +- [ ] Add onStep callback to PlaybackEngine
+       45 +- [ ] Add loop option to PlaybackEngine
+       46
+       47 -## Phase 4: SID Synth (specs/02-sid-synth.md)
+       47 +---
+       48
+       49 +## Phase 4: SID Synth - Types & DSP (specs/02-sid-synth.md)
+       50 +
+       51  - [ ] Create src/audio/types.ts with SynthMessage, WorkletMessage types
+       52  - [ ] Create src/audio/quantize.ts with quantize8bit function
+       53 -- [ ] Create tests for 8-bit quantization (exactly 256 levels)
+       54 -- [ ] Create src/audio/envelope.ts with ADSR envelope generator
+       55 -- [ ] Create tests for ADSR gain curve
+       56 -- [ ] Create src/audio/waveforms.ts with triangle, sawtooth, pulse, noise generators
+       57 -- [ ] Create tests for waveform output
+       53 +- [ ] Create src/audio/envelope.ts with computeAdsrGain function
+       54 +- [ ] Create src/audio/waveforms.ts with triangleWave generator
+       55 +- [ ] Add sawtoothWave generator to src/audio/waveforms.ts
+       56 +- [ ] Add pulseWave generator to src/audio/waveforms.ts
+       57 +- [ ] Add noiseWave generator to src/audio/waveforms.ts
+       58 +
+       59 +---
+       60 +
+       61 +## Phase 5: SID Synth - Runtime (specs/02-sid-synth.md)
+       62 +
+       63 +- [ ] Create src/audio/voice.ts with Voice class (single note playback)
+       64 +- [ ] Create src/audio/voice-manager.ts with VoiceManager class (polyphony)
+       65  - [ ] Create src/audio/synth-worklet.ts AudioWorkletProcessor
+       66  - [ ] Create src/audio/synth-manager.ts main thread controller
+       67 -- [ ] Create tests for note on/off messaging
+       67 +- [ ] Create public/synth-worklet.js build wrapper for AudioWorklet
+       68
+       69 -## Phase 5: Tracker Grid UI (specs/04-tracker-grid.md)
+       69 +---
+       70
+       71 +## Phase 6: Tracker Grid - Rendering (specs/04-tracker-grid.md)
+       72 +
+       73  - [ ] Create src/ui/format.ts with formatCell function
+       74 -- [ ] Create tests for formatCell (notes and null)
+       75 -- [ ] Create src/ui/grid.ts with virtual scrolling grid renderer
+       76 -- [ ] Add cell click selection to src/ui/grid.ts
+       77 -- [ ] Add keyboard navigation (arrows, page up/down, home/end) to src/ui/grid.ts
+       78 -- [ ] Add playhead highlighting to src/ui/grid.ts
+       74 +- [ ] Create src/ui/grid/render.ts with renderGrid function (basic table)
+       75 +- [ ] Create src/ui/grid/virtual-scroll.ts with calculateVisibleRows function
+       76 +- [ ] Add virtual rendering to src/ui/grid/render.ts
+       77
+       78 -## Phase 6: Step Recording (specs/05-step-recording.md)
+       78 +---
+       79
+       80 +## Phase 7: Tracker Grid - Interaction (specs/04-tracker-grid.md)
+       81 +
+       82 +- [ ] Create src/ui/grid/selection.ts with selectCell function
+       83 +- [ ] Add click handler to grid for cell selection
+       84 +- [ ] Create src/ui/grid/navigation.ts with handleKeyNavigation function
+       85 +- [ ] Add arrow keys, page up/down, home/end to navigation
+       86 +- [ ] Create src/ui/grid/playhead.ts with highlightPlayhead function
+       87 +- [ ] Wire playhead to playback engine step callback
+       88 +
+       89 +---
+       90 +
+       91 +## Phase 8: Step Recording (specs/05-step-recording.md)
+       92 +
+       93  - [ ] Create src/ui/recording.ts with recordNote function
+       94 -- [ ] Add auto-advance after recording to src/ui/recording.ts
+       95 -- [ ] Add delete note handling to src/ui/recording.ts
+       96 -- [ ] Create tests for step recording flow
+       94 +- [ ] Add auto-advance logic to recordNote
+       95 +- [ ] Add deleteNote function to src/ui/recording.ts
+       96 +- [ ] Wire recording to keyboard input handler
+       97
+       98 -## Phase 7: Visual Keyboard (specs/06-keyboard-input.md)
+       98 +---
+       99
+      100 -- [ ] Create src/ui/keyboard-display.ts with on-screen keyboard
+      101 -- [ ] Add key press highlighting to src/ui/keyboard-display.ts
+      102 -- [ ] Add octave indicator to src/ui/keyboard-display.ts
+      100 +## Phase 9: Visual Keyboard (specs/06-keyboard-input.md)
+      101
+      102 -## Phase 8: File I/O (specs/07-file-io.md)
+      102 +- [ ] Create src/ui/keyboard-display.ts with renderKeyboard function
+      103 +- [ ] Add key press highlighting to keyboard display
+      104 +- [ ] Add octave range indicator to keyboard display
+      105
+      106 -- [ ] Create src/lib/serialize.ts with serializeProject, deserializeProject
+      107 -- [ ] Create tests for serialization round-trip
+      108 -- [ ] Create src/lib/fileio.ts with saveProject, loadProject
+      109 -- [ ] Add error handling for invalid files to src/lib/fileio.ts
+      106 +---
+      107
+      108 -## Phase 9: Integration
+      108 +## Phase 10: File I/O (specs/07-file-io.md)
+      109
+      110 -- [ ] Wire main.ts to initialize store, synth, playback, UI
+      111 -- [ ] Add play/stop button controls to UI
+      112 -- [ ] Add BPM control slider to UI
+      113 -- [ ] Add instrument selector to UI
+      114 -- [ ] Add octave shift controls to UI
+      110 +- [ ] Create src/lib/serialize.ts with serializeProject function
+      111 +- [ ] Add deserializeProject function to src/lib/serialize.ts
+      112 +- [ ] Create src/lib/fileio.ts with saveProject function
+      113 +- [ ] Add loadProject function to src/lib/fileio.ts
+      114 +- [ ] Add error handling for invalid files
+      115
+      116 -## Phase 10: Polish
+      116 +---
+      117
+      118 -- [ ] Add basic CSS styling for tracker grid
+      119 -- [ ] Add CSS styling for visual keyboard
+      120 -- [ ] Add CSS styling for transport controls
+      118 +## Phase 11: Integration - Core Wiring
+      119
+      120 +- [ ] Wire store initialization in main.ts
+      121 +- [ ] Wire synth initialization in main.ts
+      122 +- [ ] Wire playback engine to store in main.ts
+      123 +- [ ] Wire grid rendering to store in main.ts
+      124 +- [ ] Wire keyboard input to synth + recording in main.ts
+      125 +
+      126  ---
+      127
+      128 +## Phase 12: Integration - Controls
+      129 +
+      130 +- [ ] Create src/ui/transport.ts with play/stop buttons
+      131 +- [ ] Add BPM slider to transport controls
+      132 +- [ ] Add instrument selector UI
+      133 +- [ ] Add octave shift buttons
+      134 +- [ ] Wire all controls to store
+      135 +
+      136 +---
+      137 +
+      138 +## Phase 13: Styling
+      139 +
+      140 +- [ ] Create src/styles/grid.css with tracker grid styling
+      141 +- [ ] Create src/styles/keyboard.css with visual keyboard styling
+      142 +- [ ] Create src/styles/transport.css with control panel styling
+      143 +- [ ] Create src/styles/main.css importing all stylesheets
+      144 +
+      145 +---
+      146 +
+      147  ## Progress Tracking
+      148
+      149  - **Started:** 2026-03-02
+      150  - **Completed:** 0 tasks
+      151 -- **Remaining:** 46 tasks
+      151 +- **Remaining:** 62 tasks
+
+● Done. 62 atomic tasks across 14 phases.
+
+  Key improvements:
+  ┌──────────────────────────────────────────────┬───────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │                    Before                    │                                                   After                                                   │
+  ├──────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ 1 task: "Create grid with virtual scrolling" │ 6 tasks: render → virtual-scroll → selection → navigation → playhead → wire                               │
+  ├──────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ 1 task: "Wire main.ts"                       │ 10 tasks: store → synth → playback → grid → keyboard → transport → bpm → instrument → octave → controls   │
+  ├──────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ 1 task: "Create synth worklet"               │ 11 tasks: types → quantize → envelope → 4 waveforms → voice → voice-manager → worklet → manager → wrapper │
+  └──────────────────────────────────────────────┴───────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+  Each task now:
+  - Creates ONE file OR adds ONE function/method
+  - Can be completed in a single fresh-context iteration
+  - Has clear scope (no "and" needed to describe)
+
+  You can now run:
+  ./loop.sh
+
+✻ Worked for 1m 39s
+
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯ 
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ctrl+t to hide tasks
