@@ -31,6 +31,15 @@ cp "$TEMPLATES_DIR/AGENTS.md" "$TARGET_DIR/AGENTS.md" && echo "Created AGENTS.md
 # Copy example spec into specs/
 cp "$TEMPLATES_DIR/spec.md" "$TARGET_DIR/specs/spec.md" && echo "Created specs/spec.md"
 
+# Add .loop-complete to .gitignore
+if [ -f "$TARGET_DIR/.gitignore" ]; then
+    if ! grep -q '.loop-complete' "$TARGET_DIR/.gitignore"; then
+        echo '.loop-complete' >> "$TARGET_DIR/.gitignore" && echo "Added .loop-complete to .gitignore"
+    fi
+else
+    echo '.loop-complete' > "$TARGET_DIR/.gitignore" && echo "Created .gitignore"
+fi
+
 echo ""
 echo "Project structure:"
 echo "  loop.sh              - Ralph loop script (plan/build modes)"

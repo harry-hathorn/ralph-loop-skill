@@ -68,6 +68,12 @@ Each JTBD gets broken into focused topics. Each topic should be expressible in o
 Good: "User authentication via email and password"
 Bad: "User authentication and profile management" (split these)
 
+**Task scoping for the build loop — CRITICAL:** Each topic should break down into atomic implementation plan items — as small as possible. Each checkbox = ONE file or ONE small cohesive change. The AI gets dumb when it tries to do too much — that's the whole reason we use a loop with fresh context.
+
+A single spec topic might produce 3-8 plan items. For example, "SID Synthesizer" becomes: "SID oscillator waveforms", "SID ADSR envelope", "SID LFO modulation", "SID 8-bit quantization". If a plan item needs "and" to describe it, it's too big — split it. Tests are part of their module's task, not separate.
+
+When discussing specs with the user, think about how each spec will decompose into atomic build steps. If a spec is so broad that it would produce a single monolithic plan item, guide the user to split it into focused specs.
+
 ### Step 4: Write Specs (One Per Topic)
 
 For each topic of concern, write a `specs/FILENAME.md`. Each spec should cover:

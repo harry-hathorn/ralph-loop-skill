@@ -93,11 +93,29 @@ flowchart TB
     P1 --> P2 --> P3
 ```
 
+## Install the Skill
+
+Copy the `ralph-loop/` directory into your Claude Code skills folder:
+
+```bash
+# Clone this repo
+git clone https://github.com/harry-hathorn/ralph-loop.git
+cp -r ralph-loop/ralph-loop ~/.claude/skills/ralph-loop
+```
+
+Or unzip the `.skill` file directly:
+
+```bash
+unzip ralph-loop.skill -d ~/.claude/skills/
+```
+
+The skill is now available in Claude Code as `ralph-loop`.
+
 ## Quick Start
 
 ```bash
 # Initialize in your project
-scripts/init_ralph.sh /path/to/project
+~/.claude/skills/ralph-loop/scripts/init_ralph.sh /path/to/project
 cd /path/to/project
 ```
 
@@ -145,12 +163,41 @@ project-root/
 | Phase 2 (Plan) | Generates `IMPLEMENTATION_PLAN.md` from specs | `./loop.sh plan` |
 | Phase 3 (Build) | Implements one task per iteration, commits | `./loop.sh` |
 
+## Key Principles
+
+### Context Is Everything
+
+- 200K+ tokens advertised ≈ 176K usable, with 40-60% utilization being the "smart zone"
+- Tight tasks + 1 task per loop = 100% smart zone context utilization
+- **Main agent as scheduler** — don't do expensive work in main context; spawn subagents
+- **Subagents as memory** — each subagent gets ~156kb that's garbage collected. Fan out to avoid polluting main context
+- **Simplicity and brevity win** — fewer parts, less verbose inputs = more deterministic results
+- **Markdown over JSON** — better token efficiency for defining and tracking work
+
+### Steering Ralph: Patterns + Backpressure
+
+- **Steer upstream** — specs, prompts, and AGENTS.md loaded every iteration give the model a known starting state. Your existing code patterns shape what gets generated
+- **Steer downstream** — tests, typechecks, lints, and builds reject invalid work. AGENTS.md wires in the actual project-specific commands
+- When Ralph generates wrong patterns, add utilities and code patterns to steer it — Ralph discovers and follows what's in the codebase
+
+### Let Ralph Ralph
+
+- Lean into the LLM's ability to self-identify, self-correct, and self-improve
+- Eventual consistency through iteration — applies to plan, task selection, and implementation
+- **Use protection** — `--dangerously-skip-permissions` is required for autonomous operation, so run in a sandbox (Docker, Fly Sprites, E2B). "It's not if it gets popped, it's when. And what is the blast radius?"
+
+### Move Outside the Loop
+
+- Ralph does all the work. Your job is to engineer the setup and environment
+- **Observe and course correct** — watch early loops, see where gaps occur, add signs
+- **Tune it like a guitar** — don't prescribe everything upfront; adjust reactively when Ralph fails a specific way
+- Signs aren't just prompt text — they're anything Ralph can discover: prompt guardrails, AGENTS.md, utilities in your codebase
+- **Plan is disposable** — wrong plan? Delete it, run `./loop.sh plan` again. Cheap compared to Ralph going in circles
+
 ## Key Ideas
 
 - **Two prompts, one loop**: Swap between planning and building by passing `plan` argument
 - **AGENTS.md**: Operational guide with build/test commands. Loaded every iteration. Keep it brief.
-- **Plan is disposable**: Wrong plan? Delete it, run `./loop.sh plan` again
-- **Subagents as memory**: Fan out reads/searches to subagents, keep main context clean
 - **Backpressure**: Tests/builds reject bad work. AGENTS.md wires in project-specific commands.
 
 ## Credits
